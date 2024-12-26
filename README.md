@@ -19,7 +19,7 @@ This program is ideal for small businesses, hobbyists, or anyone looking to main
 ## Getting Started
 ### 1. Clone the Repository
 ```bash
- git clone https://github.com/yourusername/GUI-Inventory-Manager.git
+ git clone https://github.com/Code-JL/GUI-Inventory-Manager.git
  cd GUI-Inventory-Manager
 ```
 
@@ -44,4 +44,4 @@ Contributions are welcome! If you'd like to improve this project, please:
 3. Submit a pull request with a detailed description of the changes.
 
 ## License
-This project is licensed under the MIT License. See the LICENSE file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
