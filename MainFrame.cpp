@@ -66,10 +66,14 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     m_setAmountBtn = new wxButton(rightPanel, wxID_ANY, "Set Amount");
     m_setNameBtn = new wxButton(rightPanel, wxID_ANY, "Set Name");
     m_setImageBtn = new wxButton(rightPanel, wxID_ANY, "Set Image");
+    wxButton* saveBtn = new wxButton(rightPanel, wxID_ANY, "Save Items");
+    wxButton* loadBtn = new wxButton(rightPanel, wxID_ANY, "Load Items");
 
     rightSizer->Add(m_setAmountBtn, 0, wxALL, 5);
     rightSizer->Add(m_setNameBtn, 0, wxALL, 5);
     rightSizer->Add(m_setImageBtn, 0, wxALL, 5);
+    rightSizer->Add(saveBtn, 0, wxALL, 5);
+    rightSizer->Add(loadBtn, 0, wxALL, 5);
 
     // Bind events
     m_incrementBtn->Bind(wxEVT_BUTTON, &MainFrame::OnIncrement, this);
@@ -77,6 +81,8 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     m_setAmountBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetAmount, this);
     m_setNameBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetName, this);
     m_setImageBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetImage, this);
+    saveBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSave, this);
+    loadBtn->Bind(wxEVT_BUTTON, &MainFrame::OnLoad, this);
 
     m_itemDescription->Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent& evt) {
         int selection = m_listBox->GetSelection();
@@ -158,5 +164,17 @@ void MainFrame::OnSetImage(wxCommandEvent& evt) {
         if (dialog.ShowModal() == wxID_OK) {
             m_items[selection].setImage(dialog.GetPath().ToStdString());
         }
+    }
+}
+
+void MainFrame::OnSave(wxCommandEvent& evt) {
+    Save::SaveItems(m_items, "save/inventory.csv");
+}
+
+void MainFrame::OnLoad(wxCommandEvent& evt) {
+    Save::LoadItems(m_items, "save/inventory.csv");
+    m_listBox->Clear();
+    for (const auto& item : m_items) {
+        m_listBox->Append(item.getName());
     }
 }

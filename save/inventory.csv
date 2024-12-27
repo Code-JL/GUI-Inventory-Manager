@@ -1,0 +1,5 @@
+"sword","A sharp blade for close combat",5,"path/to/sword.png"
+"shield","Protective gear to block attacks",200,"path/to/shield.png"
+"potion","Restores 50 HP when consumed",10,"path/to/potion.png"
+"bow","Long-range weapon for precise attacks",2,"path/to/bow.png"
+"arrow","Ammunition for bow. Deals 25 damage",50,"path/to/arrow.png"

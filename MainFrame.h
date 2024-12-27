@@ -2,6 +2,7 @@
 #include <wx/wx.h>
 #include <wx/listbox.h>
 #include "Item.h"
+#include "Save.h"
 #include <vector>
 
 class MainFrame : public wxFrame {
@@ -33,5 +34,11 @@ private:
     void OnSetName(wxCommandEvent& evt);
     void OnSetImage(wxCommandEvent& evt);
     void OnListBoxSelect(wxCommandEvent& evt);
+
+    // Add to private section:
+    void OnSave(wxCommandEvent& evt);
+    void OnLoad(wxCommandEvent& evt);
+
     void InitializeItems();
+
 };

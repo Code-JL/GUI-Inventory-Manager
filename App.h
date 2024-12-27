@@ -8,5 +8,5 @@ public:
     virtual bool OnInit();
     virtual int OnExit();
 private:
-    wxPersistenceManager* m_persistMgr;
+    wxPersistenceManager* m_persistMgr = nullptr;
 };

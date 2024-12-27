@@ -138,11 +138,13 @@
     <ClInclude Include="App.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="MainFrame.h" />
+    <ClInclude Include="Save.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="MainFrame.cpp" />
+    <ClCompile Include="Save.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="DebugNotes.txt" />

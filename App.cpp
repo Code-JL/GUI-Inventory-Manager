@@ -3,6 +3,7 @@
 #include <wx/wx.h>
 #include <wx/config.h>
 
+#pragma warning(disable: 28251)
 wxIMPLEMENT_APP(App);
 
 bool App::OnInit() {
