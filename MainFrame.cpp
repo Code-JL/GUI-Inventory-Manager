@@ -18,6 +18,7 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     int width = screenSize.GetWidth() * 0.6;
     int height = screenSize.GetHeight() * 0.6;
     SetSize(width, height);
+    SetMinSize(wxSize(400, 300));
 
     wxBoxSizer* mainSizer = new wxBoxSizer(wxHORIZONTAL);
 
@@ -41,15 +42,17 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     m_itemCount = new wxStaticText(rightPanel, wxID_ANY, "Quantity: 0");
     rightSizer->Add(m_itemCount, 0, wxALL, 5);
 
-    m_itemTitle = new wxStaticText(rightPanel, wxID_ANY, "Select an item", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+    m_itemTitle = new wxStaticText(rightPanel, wxID_ANY, "Select an item",
+        wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE);
     wxFont titleFont = m_itemTitle->GetFont();
     titleFont.SetPointSize(14);
     titleFont.SetWeight(wxFONTWEIGHT_BOLD);
     m_itemTitle->SetFont(titleFont);
-    rightSizer->Add(m_itemTitle, 0, wxALL | wxEXPAND, 5);
+    rightSizer->Add(m_itemTitle, 0, wxALL | wxALIGN_CENTER_HORIZONTAL | wxEXPAND, 5);
 
-    m_itemDescription = new wxStaticText(rightPanel, wxID_ANY, "Item description will appear here");
-    rightSizer->Add(m_itemDescription, 0, wxALL | wxEXPAND, 5);
+    m_itemDescription = new wxTextCtrl(rightPanel, wxID_ANY, "Item description will appear here",
+        wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
+    rightSizer->Add(m_itemDescription, 1, wxALL | wxEXPAND, 5);
 
     wxBoxSizer* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
 
@@ -62,12 +65,10 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
 
     m_setAmountBtn = new wxButton(rightPanel, wxID_ANY, "Set Amount");
     m_setNameBtn = new wxButton(rightPanel, wxID_ANY, "Set Name");
-    m_setDescriptionBtn = new wxButton(rightPanel, wxID_ANY, "Set Description");
     m_setImageBtn = new wxButton(rightPanel, wxID_ANY, "Set Image");
 
     rightSizer->Add(m_setAmountBtn, 0, wxALL, 5);
     rightSizer->Add(m_setNameBtn, 0, wxALL, 5);
-    rightSizer->Add(m_setDescriptionBtn, 0, wxALL, 5);
     rightSizer->Add(m_setImageBtn, 0, wxALL, 5);
 
     // Bind events
@@ -75,8 +76,15 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     m_decrementBtn->Bind(wxEVT_BUTTON, &MainFrame::OnDecrement, this);
     m_setAmountBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetAmount, this);
     m_setNameBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetName, this);
-    m_setDescriptionBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetDescription, this);
     m_setImageBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetImage, this);
+
+    m_itemDescription->Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent& evt) {
+        int selection = m_listBox->GetSelection();
+        if (selection != wxNOT_FOUND) {
+            m_items[selection].setDescription(m_itemDescription->GetValue().ToStdString());
+        }
+        evt.Skip();
+    });
 
     rightPanel->SetSizer(rightSizer);
     mainSizer->Add(rightPanel, 80, wxEXPAND);
@@ -138,17 +146,6 @@ void MainFrame::OnSetName(wxCommandEvent& evt) {
             m_items[selection].setName(input.ToStdString());
             m_listBox->SetString(selection, input);
             m_itemTitle->SetLabel(input);
-        }
-    }
-}
-
-void MainFrame::OnSetDescription(wxCommandEvent& evt) {
-    int selection = m_listBox->GetSelection();
-    if (selection != wxNOT_FOUND) {
-        wxString input = wxGetTextFromUser("Enter new description:", "Set Description");
-        if (!input.IsEmpty()) {
-            m_items[selection].setDescription(input.ToStdString());
-            m_itemDescription->SetLabel(input);
         }
     }
 }

@@ -17,7 +17,7 @@ private:
     wxListBox* m_listBox;
     wxStaticText* m_itemCount;
     wxStaticText* m_itemTitle;
-    wxStaticText* m_itemDescription;
+    wxTextCtrl* m_itemDescription;
     
 
     wxButton* m_incrementBtn;
@@ -31,7 +31,6 @@ private:
     void OnDecrement(wxCommandEvent& evt);
     void OnSetAmount(wxCommandEvent& evt);
     void OnSetName(wxCommandEvent& evt);
-    void OnSetDescription(wxCommandEvent& evt);
     void OnSetImage(wxCommandEvent& evt);
     void OnListBoxSelect(wxCommandEvent& evt);
     void InitializeItems();
