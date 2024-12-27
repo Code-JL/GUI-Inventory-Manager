@@ -1,0 +1,4 @@
+To delete the current persistence settings, On Windows:
+	Open Registry Editor (regedit)
+	Navigate to HKEY_CURRENT_USER\Software\InventoryManager
+	Delete the InventoryManager folder
