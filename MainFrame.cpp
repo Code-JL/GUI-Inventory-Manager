@@ -51,6 +51,33 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     m_itemDescription = new wxStaticText(rightPanel, wxID_ANY, "Item description will appear here");
     rightSizer->Add(m_itemDescription, 0, wxALL | wxEXPAND, 5);
 
+    wxBoxSizer* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
+
+    m_incrementBtn = new wxButton(rightPanel, wxID_ANY, "Add");
+    m_decrementBtn = new wxButton(rightPanel, wxID_ANY, "Remove");
+    buttonSizer->Add(m_incrementBtn, 0, wxALL, 5);
+    buttonSizer->Add(m_decrementBtn, 0, wxALL, 5);
+
+    rightSizer->Add(buttonSizer, 0, wxALL, 5);
+
+    m_setAmountBtn = new wxButton(rightPanel, wxID_ANY, "Set Amount");
+    m_setNameBtn = new wxButton(rightPanel, wxID_ANY, "Set Name");
+    m_setDescriptionBtn = new wxButton(rightPanel, wxID_ANY, "Set Description");
+    m_setImageBtn = new wxButton(rightPanel, wxID_ANY, "Set Image");
+
+    rightSizer->Add(m_setAmountBtn, 0, wxALL, 5);
+    rightSizer->Add(m_setNameBtn, 0, wxALL, 5);
+    rightSizer->Add(m_setDescriptionBtn, 0, wxALL, 5);
+    rightSizer->Add(m_setImageBtn, 0, wxALL, 5);
+
+    // Bind events
+    m_incrementBtn->Bind(wxEVT_BUTTON, &MainFrame::OnIncrement, this);
+    m_decrementBtn->Bind(wxEVT_BUTTON, &MainFrame::OnDecrement, this);
+    m_setAmountBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetAmount, this);
+    m_setNameBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetName, this);
+    m_setDescriptionBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetDescription, this);
+    m_setImageBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetImage, this);
+
     rightPanel->SetSizer(rightSizer);
     mainSizer->Add(rightPanel, 80, wxEXPAND);
 
@@ -70,5 +97,69 @@ void MainFrame::OnListBoxSelect(wxCommandEvent& evt) {
         m_itemTitle->SetLabel(selectedItem.getName());
         m_itemDescription->SetLabel(selectedItem.getDescription());
         m_itemCount->SetLabel(wxString::Format("Quantity: %d", selectedItem.getAmount()));
+    }
+}
+
+void MainFrame::OnIncrement(wxCommandEvent& evt) {
+    int selection = m_listBox->GetSelection();
+    if (selection != wxNOT_FOUND) {
+        m_items[selection].increment();
+        m_itemCount->SetLabel(wxString::Format("Quantity: %d", m_items[selection].getAmount()));
+    }
+}
+
+void MainFrame::OnDecrement(wxCommandEvent& evt) {
+    int selection = m_listBox->GetSelection();
+    if (selection != wxNOT_FOUND) {
+        m_items[selection].decrement();
+        m_itemCount->SetLabel(wxString::Format("Quantity: %d", m_items[selection].getAmount()));
+    }
+}
+
+void MainFrame::OnSetAmount(wxCommandEvent& evt) {
+    int selection = m_listBox->GetSelection();
+    if (selection != wxNOT_FOUND) {
+        wxString input = wxGetTextFromUser("Enter new amount:", "Set Amount");
+        if (!input.IsEmpty()) {
+            long amount;
+            if (input.ToLong(&amount)) {
+                m_items[selection].setAmount(amount);
+                m_itemCount->SetLabel(wxString::Format("Quantity: %d", m_items[selection].getAmount()));
+            }
+        }
+    }
+}
+
+void MainFrame::OnSetName(wxCommandEvent& evt) {
+    int selection = m_listBox->GetSelection();
+    if (selection != wxNOT_FOUND) {
+        wxString input = wxGetTextFromUser("Enter new name:", "Set Name");
+        if (!input.IsEmpty()) {
+            m_items[selection].setName(input.ToStdString());
+            m_listBox->SetString(selection, input);
+            m_itemTitle->SetLabel(input);
+        }
+    }
+}
+
+void MainFrame::OnSetDescription(wxCommandEvent& evt) {
+    int selection = m_listBox->GetSelection();
+    if (selection != wxNOT_FOUND) {
+        wxString input = wxGetTextFromUser("Enter new description:", "Set Description");
+        if (!input.IsEmpty()) {
+            m_items[selection].setDescription(input.ToStdString());
+            m_itemDescription->SetLabel(input);
+        }
+    }
+}
+
+void MainFrame::OnSetImage(wxCommandEvent& evt) {
+    int selection = m_listBox->GetSelection();
+    if (selection != wxNOT_FOUND) {
+        wxFileDialog dialog(this, "Choose image file", "", "",
+            "Image files (*.png;*.jpg)|*.png;*.jpg", wxFD_OPEN);
+        if (dialog.ShowModal() == wxID_OK) {
+            m_items[selection].setImage(dialog.GetPath().ToStdString());
+        }
     }
 }

@@ -19,6 +19,20 @@ private:
     wxStaticText* m_itemTitle;
     wxStaticText* m_itemDescription;
     
+
+    wxButton* m_incrementBtn;
+    wxButton* m_decrementBtn;
+    wxButton* m_setAmountBtn;
+    wxButton* m_setNameBtn;
+    wxButton* m_setDescriptionBtn;
+    wxButton* m_setImageBtn;
+
+    void OnIncrement(wxCommandEvent& evt);
+    void OnDecrement(wxCommandEvent& evt);
+    void OnSetAmount(wxCommandEvent& evt);
+    void OnSetName(wxCommandEvent& evt);
+    void OnSetDescription(wxCommandEvent& evt);
+    void OnSetImage(wxCommandEvent& evt);
     void OnListBoxSelect(wxCommandEvent& evt);
     void InitializeItems();
 };
