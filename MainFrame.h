@@ -35,9 +35,15 @@ private:
     void OnSetImage(wxCommandEvent& evt);
     void OnListBoxSelect(wxCommandEvent& evt);
 
-    // Add to private section:
+    //MENU BAR: START
     void OnSave(wxCommandEvent& evt);
     void OnLoad(wxCommandEvent& evt);
+
+    void OnExit(wxCommandEvent& evt);
+
+	void OnAbout(wxCommandEvent& evt);
+    //MENU BAR: END
+
 
     void InitializeItems();
 

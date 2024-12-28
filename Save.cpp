@@ -21,7 +21,6 @@ std::string Save::EscapeForCSV(const std::string& field) {
 }
 
 void Save::SaveItems(const std::vector<Item>& items, const std::string& filePath, char separator) {
-    // Create save directory using error checking
     std::error_code ec;
     if (!std::filesystem::exists("save")) {
         std::filesystem::create_directory("save", ec);
@@ -32,8 +31,22 @@ void Save::SaveItems(const std::vector<Item>& items, const std::string& filePath
     }
 
     std::ofstream file(filePath);
-    // Rest of the code remains the same
+    if (!file.is_open()) {
+        wxMessageBox("Error: Could not open file for saving.", "Save Error", wxICON_ERROR);
+        return;
+    }
+
+    for (const auto& item : items) {
+        file << EscapeForCSV(item.getName()) << separator
+            << EscapeForCSV(item.getDescription()) << separator
+            << item.getAmount() << separator
+            << EscapeForCSV(item.getImage()) << "\n";
+    }
+
+    file.close();
+    wxMessageBox("Items saved successfully!", "Save Complete", wxICON_INFORMATION);
 }
+
 
 std::vector<std::string> Save::ParseCSVLine(const std::string& line) {
     std::vector<std::string> fields;

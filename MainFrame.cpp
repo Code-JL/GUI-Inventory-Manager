@@ -18,12 +18,37 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     int width = screenSize.GetWidth() * 0.6;
     int height = screenSize.GetHeight() * 0.6;
     SetSize(width, height);
-    SetMinSize(wxSize(400, 300));
+    SetMinSize(wxSize(500, 500));
 
     wxBoxSizer* mainSizer = new wxBoxSizer(wxHORIZONTAL);
 
     wxPanel* leftPanel = new wxPanel(this);
     wxBoxSizer* leftSizer = new wxBoxSizer(wxVERTICAL);
+
+
+    //MENU BAR: START
+    wxMenuBar* menuBar = new wxMenuBar();
+
+    // File menu
+	wxMenu* fileMenu = new wxMenu();
+    fileMenu->Append(wxID_NEW, "&New");
+    fileMenu->Append(wxID_OPEN, "&Load");
+    fileMenu->Append(wxID_SAVE, "&Save");
+    fileMenu->AppendSeparator();
+    fileMenu->Append(wxID_EXIT, "&Exit");
+
+    // Create Help menu
+    wxMenu* helpMenu = new wxMenu();
+    helpMenu->Append(wxID_ABOUT, "&About");
+
+    // Add menus to menubar
+    menuBar->Append(fileMenu, "&File");
+    menuBar->Append(helpMenu, "&Help");
+
+    // Set menu bar
+	SetMenuBar(menuBar);
+    //MENU BAR: END
+
 
     m_listBox = new wxListBox(leftPanel, wxID_ANY);
 
@@ -66,14 +91,10 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     m_setAmountBtn = new wxButton(rightPanel, wxID_ANY, "Set Amount");
     m_setNameBtn = new wxButton(rightPanel, wxID_ANY, "Set Name");
     m_setImageBtn = new wxButton(rightPanel, wxID_ANY, "Set Image");
-    wxButton* saveBtn = new wxButton(rightPanel, wxID_ANY, "Save Items");
-    wxButton* loadBtn = new wxButton(rightPanel, wxID_ANY, "Load Items");
 
     rightSizer->Add(m_setAmountBtn, 0, wxALL, 5);
     rightSizer->Add(m_setNameBtn, 0, wxALL, 5);
     rightSizer->Add(m_setImageBtn, 0, wxALL, 5);
-    rightSizer->Add(saveBtn, 0, wxALL, 5);
-    rightSizer->Add(loadBtn, 0, wxALL, 5);
 
     // Bind events
     m_incrementBtn->Bind(wxEVT_BUTTON, &MainFrame::OnIncrement, this);
@@ -81,8 +102,13 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     m_setAmountBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetAmount, this);
     m_setNameBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetName, this);
     m_setImageBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetImage, this);
-    saveBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSave, this);
-    loadBtn->Bind(wxEVT_BUTTON, &MainFrame::OnLoad, this);
+
+    // MENU BAR BINDS: START
+	fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnSave, this, wxID_SAVE);
+	fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnLoad, this, wxID_OPEN);
+	fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnExit, this, wxID_EXIT);
+	helpMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnAbout, this, wxID_ABOUT);
+	// MENU BAR BINDS: END
 
     m_itemDescription->Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent& evt) {
         int selection = m_listBox->GetSelection();
@@ -167,6 +193,8 @@ void MainFrame::OnSetImage(wxCommandEvent& evt) {
     }
 }
 
+
+//MENU BAR: START
 void MainFrame::OnSave(wxCommandEvent& evt) {
     Save::SaveItems(m_items, "save/inventory.csv");
 }
@@ -178,3 +206,30 @@ void MainFrame::OnLoad(wxCommandEvent& evt) {
         m_listBox->Append(item.getName());
     }
 }
+
+void MainFrame::OnExit(wxCommandEvent& evt)
+{
+    int answer = wxMessageBox("Would you like to save before exiting?",
+        "Save Changes?",
+        wxYES_NO | wxCANCEL | wxICON_QUESTION);
+
+    if (answer == wxYES)
+    {
+        OnSave(evt);  // Call the save function
+        Close();
+    }
+    else if (answer == wxNO)
+    {
+        Close();
+    }
+}
+
+
+void MainFrame::OnAbout(wxCommandEvent& evt)
+{
+    wxMessageBox("GUI Iventory Manager\n\nClick OK to visit our website",
+        "About", wxOK | wxICON_INFORMATION);
+
+    wxLaunchDefaultBrowser("github.com/Code-JL/GUI-Inventory-Manager");
+}
+//MENU BAR: END
