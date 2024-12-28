@@ -25,7 +25,6 @@ private:
     wxButton* m_decrementBtn;
     wxButton* m_setAmountBtn;
     wxButton* m_setNameBtn;
-    wxButton* m_setDescriptionBtn;
     wxButton* m_setImageBtn;
 
     void OnIncrement(wxCommandEvent& evt);

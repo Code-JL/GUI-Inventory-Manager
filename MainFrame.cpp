@@ -18,97 +18,116 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     int width = screenSize.GetWidth() * 0.6;
     int height = screenSize.GetHeight() * 0.6;
     SetSize(width, height);
-    SetMinSize(wxSize(500, 500));
+    SetMinSize(wxSize(800, 500));
 
-    wxBoxSizer* mainSizer = new wxBoxSizer(wxHORIZONTAL);
-
-    wxPanel* leftPanel = new wxPanel(this);
-    wxBoxSizer* leftSizer = new wxBoxSizer(wxVERTICAL);
-
-
-    //MENU BAR: START
+    // Menu Bar Setup
     wxMenuBar* menuBar = new wxMenuBar();
-
-    // File menu
-	wxMenu* fileMenu = new wxMenu();
+    wxMenu* fileMenu = new wxMenu();
     fileMenu->Append(wxID_NEW, "&New");
     fileMenu->Append(wxID_OPEN, "&Load");
     fileMenu->Append(wxID_SAVE, "&Save");
     fileMenu->AppendSeparator();
     fileMenu->Append(wxID_EXIT, "&Exit");
 
-    // Create Help menu
     wxMenu* helpMenu = new wxMenu();
     helpMenu->Append(wxID_ABOUT, "&About");
 
-    // Add menus to menubar
     menuBar->Append(fileMenu, "&File");
     menuBar->Append(helpMenu, "&Help");
+    SetMenuBar(menuBar);
 
-    // Set menu bar
-	SetMenuBar(menuBar);
-    //MENU BAR: END
+    // Main Layout
+    wxPanel* mainPanel = new wxPanel(this);
+    wxBoxSizer* horizontalSizer = new wxBoxSizer(wxHORIZONTAL);
 
-
+    // Left Panel
+    wxPanel* leftPanel = new wxPanel(mainPanel);
+    wxBoxSizer* leftSizer = new wxBoxSizer(wxVERTICAL);
     m_listBox = new wxListBox(leftPanel, wxID_ANY);
+    m_listBox->SetMinSize(wxSize(300, -1));
+    m_listBox->SetMaxSize(wxSize(300, -1));
 
-    // Populate listbox from items
     for (const auto& item : m_items) {
         m_listBox->Append(item.getName());
     }
 
     leftSizer->Add(m_listBox, 1, wxEXPAND | wxALL, 5);
     leftPanel->SetSizer(leftSizer);
-    mainSizer->Add(leftPanel, 20, wxEXPAND);
 
-    wxPanel* rightPanel = new wxPanel(this);
+    // Right Panel
+    wxPanel* rightPanel = new wxPanel(mainPanel);
     wxBoxSizer* rightSizer = new wxBoxSizer(wxVERTICAL);
 
-    m_itemCount = new wxStaticText(rightPanel, wxID_ANY, "Quantity: 0");
-    rightSizer->Add(m_itemCount, 0, wxALL, 5);
 
-    m_itemTitle = new wxStaticText(rightPanel, wxID_ANY, "Select an item",
-        wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL | wxST_NO_AUTORESIZE);
+    m_itemTitle = new wxStaticText(rightPanel, wxID_ANY, "Select an item");
     wxFont titleFont = m_itemTitle->GetFont();
-    titleFont.SetPointSize(14);
+    titleFont.SetPointSize(20);
     titleFont.SetWeight(wxFONTWEIGHT_BOLD);
     m_itemTitle->SetFont(titleFont);
-    rightSizer->Add(m_itemTitle, 0, wxALL | wxALIGN_CENTER_HORIZONTAL | wxEXPAND, 5);
+    rightSizer->Add(m_itemTitle, 0, wxALIGN_CENTER | wxALL, 5);
 
-    m_itemDescription = new wxTextCtrl(rightPanel, wxID_ANY, "Item description will appear here",
-        wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
-    rightSizer->Add(m_itemDescription, 1, wxALL | wxEXPAND, 5);
+    m_itemCount = new wxStaticText(rightPanel, wxID_ANY, "Quantity: 0");
+    rightSizer->Add(m_itemCount, 0, wxALIGN_CENTER | wxALL, 5);
 
+    rightSizer->AddStretchSpacer();
+
+
+    wxSize desSize = wxSize(800, 400); // Replace with your desired desSize
+
+    // Description Panel with Container
+    wxBoxSizer* descriptionContainerSizer = new wxBoxSizer(wxHORIZONTAL);
+    wxPanel* descriptionPanel = new wxPanel(rightPanel);
+    wxBoxSizer* descriptionSizer = new wxBoxSizer(wxVERTICAL);
+
+    m_itemDescription = new wxTextCtrl(descriptionPanel, wxID_ANY, "Item description will appear here",
+        wxDefaultPosition, desSize, wxTE_MULTILINE | wxTE_CENTER);
+    m_itemDescription->SetMaxSize(desSize);
+
+    descriptionSizer->Add(m_itemDescription, 1, wxEXPAND | wxALL, 5);
+    descriptionPanel->SetSizer(descriptionSizer);
+
+    // Add the description panel to a horizontal container for centering
+    descriptionContainerSizer->AddStretchSpacer(1);
+    descriptionContainerSizer->Add(descriptionPanel, 0, wxEXPAND | wxALL, 5);
+    descriptionContainerSizer->AddStretchSpacer(1);
+
+    // Add the container to the right sizer
+    rightSizer->Add(descriptionContainerSizer, 1, wxEXPAND);
+
+
+    // Button Layout
     wxBoxSizer* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
 
     m_incrementBtn = new wxButton(rightPanel, wxID_ANY, "Add");
     m_decrementBtn = new wxButton(rightPanel, wxID_ANY, "Remove");
-    buttonSizer->Add(m_incrementBtn, 0, wxALL, 5);
-    buttonSizer->Add(m_decrementBtn, 0, wxALL, 5);
-
-    rightSizer->Add(buttonSizer, 0, wxALL, 5);
-
     m_setAmountBtn = new wxButton(rightPanel, wxID_ANY, "Set Amount");
     m_setNameBtn = new wxButton(rightPanel, wxID_ANY, "Set Name");
     m_setImageBtn = new wxButton(rightPanel, wxID_ANY, "Set Image");
 
-    rightSizer->Add(m_setAmountBtn, 0, wxALL, 5);
-    rightSizer->Add(m_setNameBtn, 0, wxALL, 5);
-    rightSizer->Add(m_setImageBtn, 0, wxALL, 5);
+    buttonSizer->Add(m_incrementBtn, 0, wxALL, 5);
+    buttonSizer->Add(m_decrementBtn, 0, wxALL, 5);
+    buttonSizer->Add(m_setAmountBtn, 0, wxALL, 5);
+    buttonSizer->Add(m_setNameBtn, 0, wxALL, 5);
+    buttonSizer->Add(m_setImageBtn, 0, wxALL, 5);
 
-    // Bind events
+    rightSizer->Add(buttonSizer, 0, wxALIGN_CENTER | wxALL, 5);
+    rightPanel->SetSizer(rightSizer);
+
+    horizontalSizer->Add(leftPanel, 0, wxEXPAND | wxALL, 5);
+    horizontalSizer->Add(rightPanel, 1, wxEXPAND | wxALL, 5);
+    mainPanel->SetSizer(horizontalSizer);
+
+    // Event Bindings
     m_incrementBtn->Bind(wxEVT_BUTTON, &MainFrame::OnIncrement, this);
     m_decrementBtn->Bind(wxEVT_BUTTON, &MainFrame::OnDecrement, this);
     m_setAmountBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetAmount, this);
     m_setNameBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetName, this);
     m_setImageBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetImage, this);
 
-    // MENU BAR BINDS: START
-	fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnSave, this, wxID_SAVE);
-	fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnLoad, this, wxID_OPEN);
-	fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnExit, this, wxID_EXIT);
-	helpMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnAbout, this, wxID_ABOUT);
-	// MENU BAR BINDS: END
+    fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnSave, this, wxID_SAVE);
+    fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnLoad, this, wxID_OPEN);
+    fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnExit, this, wxID_EXIT);
+    helpMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnAbout, this, wxID_ABOUT);
 
     m_itemDescription->Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent& evt) {
         int selection = m_listBox->GetSelection();
@@ -116,18 +135,16 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
             m_items[selection].setDescription(m_itemDescription->GetValue().ToStdString());
         }
         evt.Skip();
-    });
-
-    rightPanel->SetSizer(rightSizer);
-    mainSizer->Add(rightPanel, 80, wxEXPAND);
-
-    SetSizer(mainSizer);
+        });
 
     m_listBox->Bind(wxEVT_LISTBOX, &MainFrame::OnListBoxSelect, this);
 
     SetName("MainFrame");
     wxPersistentRegisterAndRestore(this, "MainFrame");
 }
+
+
+
 
 void MainFrame::OnListBoxSelect(wxCommandEvent& evt) {
     int selection = m_listBox->GetSelection();
