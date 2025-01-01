@@ -4,7 +4,7 @@
 
 class FilterDialog : public wxDialog {
 public:
-    FilterDialog(wxWindow* parent, int& minVal, int& maxVal);
+    FilterDialog(wxWindow* parent, int& minVal, int& maxVal, std::string& category, const std::vector<std::string>& categories);
 
 private:
     wxSlider* m_minSlider;
@@ -14,6 +14,9 @@ private:
 
     wxStaticText* m_minValueText;
     wxStaticText* m_maxValueText;
+
+    wxChoice* m_categoryChoice;
+    std::string& m_selectedCategory;
 
     void OnSliderUpdate(wxCommandEvent& evt);
     void OnReset(wxCommandEvent& evt);

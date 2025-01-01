@@ -23,14 +23,20 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     SetSize(width, height);
     SetMinSize(wxSize(800, 500));
 
+    // Create unique ID for "Manage Categories" menu item
+    const int ID_MANAGE_CATEGORIES = wxID_HIGHEST + 1;
+
     // Create and setup menu bar
     wxMenuBar* menuBar = new wxMenuBar();
     wxMenu* fileMenu = new wxMenu();
     fileMenu->Append(wxID_NEW, "&New");
     fileMenu->Append(wxID_OPEN, "&Load");
     fileMenu->Append(wxID_SAVE, "&Save");
+    fileMenu->Append(ID_MANAGE_CATEGORIES, "Manage &Categories");
     fileMenu->AppendSeparator();
     fileMenu->Append(wxID_EXIT, "&Exit");
+
+
 
     wxMenu* helpMenu = new wxMenu();
     helpMenu->Append(wxID_ABOUT, "&About");
@@ -84,6 +90,10 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     // Setup item count display
     m_itemCount = new wxStaticText(rightPanel, wxID_ANY, "Quantity: 0");
     rightSizer->Add(m_itemCount, 0, wxALIGN_CENTER | wxALL, 5);
+
+    //
+    m_itemCategory = new wxStaticText(rightPanel, wxID_ANY, "Category: [None]");
+    rightSizer->Add(m_itemCategory, 0, wxALIGN_CENTER | wxALL, 5);
 
     rightSizer->AddStretchSpacer();
 
@@ -141,6 +151,7 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     // Bind menu events
     fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnSave, this, wxID_SAVE);
     fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnLoad, this, wxID_OPEN);
+    fileMenu->Bind(wxEVT_MENU, &MainFrame::OnManageCategories, this, ID_MANAGE_CATEGORIES);
     fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnExit, this, wxID_EXIT);
     helpMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnAbout, this, wxID_ABOUT);
 
@@ -230,7 +241,7 @@ void MainFrame::OnSearchInput(wxCommandEvent& evt) {
 }
 
 void MainFrame::OnFilterButton(wxCommandEvent& evt) {
-    FilterDialog dialog(this, m_minQuantity, m_maxQuantity);
+    FilterDialog dialog(this, m_minQuantity, m_maxQuantity, m_selectedCategory, m_categories);
     if (dialog.ShowModal() == wxID_OK) {
         UpdateItemList();
     }
@@ -241,31 +252,45 @@ void MainFrame::UpdateItemList() {
     m_listBox->Clear();
 
     for (const auto& item : m_items) {
-        // Convert std::string to wxString for case-insensitive comparison
-        wxString itemName = wxString::FromUTF8(item.getName());
-
-        bool matchesSearch = itemName.Lower().Contains(searchTerm);
+        // Check if item matches all filters
+        bool matchesSearch = wxString::FromUTF8(item.getName()).Lower().Contains(searchTerm);
         bool matchesQuantity = item.getAmount() >= m_minQuantity &&
             item.getAmount() <= m_maxQuantity;
+        bool matchesCategory = m_selectedCategory.empty() ||
+            item.getCategory() == m_selectedCategory;
 
-        if (matchesSearch && matchesQuantity) {
-            m_listBox->Append(itemName);
+        if (matchesSearch && matchesQuantity && matchesCategory) {
+            m_listBox->Append(item.getName());
         }
     }
 }
 
 
-
 // Menu bar event handlers
 void MainFrame::OnSave(wxCommandEvent& evt) {
-    Save::SaveItems(m_items, "save/inventory.csv");
+    Save::SaveToCfg(m_items, m_categories, "save/inventory.cfg");
 }
 
 void MainFrame::OnLoad(wxCommandEvent& evt) {
-    Save::LoadItems(m_items, "save/inventory.csv");
-    m_listBox->Clear();
-    for (const auto& item : m_items) {
-        m_listBox->Append(item.getName());
+    Save::LoadFromCfg(m_items, m_categories, "save/inventory.cfg");
+    UpdateItemList();
+
+    // Update category display if an item is selected
+    int selection = m_listBox->GetSelection();
+    if (selection != wxNOT_FOUND) {
+        m_itemCategory->SetLabel("Category: " + m_items[selection].getCategory());
+    }
+}
+
+
+void MainFrame::OnManageCategories(wxCommandEvent& evt) {
+    CategoryDialog dialog(this, m_categories);
+    if (dialog.ShowModal() == wxID_OK) {
+        // Update categories for all items if needed
+        int selection = m_listBox->GetSelection();
+        if (selection != wxNOT_FOUND) {
+            m_itemCategory->SetLabel("Category: " + m_items[selection].getCategory());
+        }
     }
 }
 

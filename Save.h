@@ -6,6 +6,10 @@
 
 class Save {
 public:
+    // Save and load to cfg functions
+    static void SaveToCfg(const std::vector<Item>& items, const std::vector<std::string>& categories, const std::string& filePath);
+    static void LoadFromCfg(std::vector<Item>& items, std::vector<std::string>& categories, const std::string& filePath);
+
     static void SaveItems(const std::vector<Item>& items, const std::string& filePath, char separator = ',');
     static void LoadItems(std::vector<Item>& items, const std::string& filePath);
     static void SaveSettings(const std::list<std::string>& settings);

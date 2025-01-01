@@ -47,6 +47,80 @@ void Save::SaveItems(const std::vector<Item>& items, const std::string& filePath
     wxMessageBox("Items saved successfully!", "Save Complete", wxICON_INFORMATION);
 }
 
+void Save::SaveToCfg(const std::vector<Item>& items, const std::vector<std::string>& categories, const std::string& filePath) {
+    std::ofstream file(filePath);
+    if (!file.is_open()) {
+        wxMessageBox("Error: Could not open file for saving.", "Save Error", wxICON_ERROR);
+        return;
+    }
+
+    // Save categories
+    file << "[Categories]\n";
+    for (const auto& category : categories) {
+        file << category << "\n";
+    }
+
+    // Save items
+    file << "[Items]\n";
+    for (const auto& item : items) {
+        file << EscapeForCSV(item.getName()) << ","
+            << EscapeForCSV(item.getDescription()) << ","
+            << item.getAmount() << ","
+            << EscapeForCSV(item.getImage()) << ","
+            << EscapeForCSV(item.getCategory()) << "\n";
+    }
+
+    file.close();
+    wxMessageBox("Items and categories saved successfully!", "Save Complete", wxICON_INFORMATION);
+}
+
+void Save::LoadFromCfg(std::vector<Item>& items, std::vector<std::string>& categories, const std::string& filePath) {
+    std::ifstream file(filePath);
+    if (!file.is_open()) {
+        wxMessageBox("Error: Could not open file for loading.", "Load Error", wxICON_ERROR);
+        return;
+    }
+
+    items.clear();
+    categories.clear();
+
+    std::string line;
+    std::string currentSection;
+
+    while (std::getline(file, line)) {
+        if (line.empty()) continue;
+
+        if (line == "[Categories]") {
+            currentSection = "Categories";
+            continue;
+        }
+        else if (line == "[Items]") {
+            currentSection = "Items";
+            continue;
+        }
+
+        if (currentSection == "Categories") {
+            categories.push_back(line);
+        }
+        else if (currentSection == "Items") {
+            std::vector<std::string> fields = ParseCSVLine(line);
+            if (fields.size() == 5) {
+                try {
+                    Item item(fields[0], fields[1], std::stoi(fields[2]), fields[3]);
+                    item.setCategory(fields[4]);
+                    items.push_back(item);
+                }
+                catch (const std::invalid_argument& e) {
+                    wxMessageBox("Warning: Invalid number format in line. Skipping.", "Load Warning", wxICON_WARNING);
+                }
+            }
+        }
+    }
+
+    file.close();
+    wxMessageBox("Items and categories loaded successfully!", "Load Complete", wxICON_INFORMATION);
+}
+
 
 std::vector<std::string> Save::ParseCSVLine(const std::string& line) {
     std::vector<std::string> fields;

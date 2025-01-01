@@ -16,6 +16,7 @@ private:
     string name;                // Item name (stored in lowercase)
     string description;         // Item description
     string imagePath;           // Path to a photo
+    string category = "[None]";  // Default category
     int amount;                 // Item quantity
 
 public:
@@ -33,6 +34,10 @@ public:
     // Setter and getter for image path
     void setImage(const string& itemImagePath);
     string getImage() const;
+
+	// Setter and getter for category
+    void setCategory(const string& itemCategory);
+    string getCategory() const;
 
     // Setter and getter for amount
     void setAmount(int itemAmount);

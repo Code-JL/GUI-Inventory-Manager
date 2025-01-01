@@ -5,6 +5,7 @@
 #include "Item.h"
 #include "Save.h"
 #include "FilterDialog.h"
+#include "CategoryDialog.h"
 #include <vector>
 
 // Main application window class
@@ -21,12 +22,14 @@ public:
 private:
     // Data members
     std::vector<Item> m_items;          // Container for inventory items
+    std::vector<std::string> m_categories;
 
     // UI Elements - Main display
     wxListBox* m_listBox;               // List of items
     wxStaticText* m_itemCount;          // Display item quantity
     wxStaticText* m_itemTitle;          // Display item name
     wxTextCtrl* m_itemDescription;      // Display/edit item description
+    wxStaticText* m_itemCategory;
 
     // UI Elements - Buttons
     wxButton* m_incrementBtn;           // Add quantity button
@@ -37,6 +40,7 @@ private:
     // Search components
     wxTextCtrl* m_searchBox;
     wxButton* m_filterButton;
+    std::string m_selectedCategory;
     int m_minQuantity = 0;
     int m_maxQuantity = 999;
 
@@ -59,6 +63,7 @@ private:
     void OnLoad(wxCommandEvent& evt);    // Load inventory from file
     void OnExit(wxCommandEvent& evt);    // Handle application exit
     void OnAbout(wxCommandEvent& evt);   // Show about dialog
+    void OnManageCategories(wxCommandEvent& evt);
 
     // Initialization
     void InitializeItems();              // Setup initial inventory items

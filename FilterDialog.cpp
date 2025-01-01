@@ -1,11 +1,26 @@
 #include "FilterDialog.h"
 
-FilterDialog::FilterDialog(wxWindow* parent, int& minVal, int& maxVal)
+FilterDialog::FilterDialog(wxWindow* parent, int& minVal, int& maxVal, std::string& category, const std::vector<std::string>& categories)
     : wxDialog(parent, wxID_ANY, "Quantity Filter")
     , m_minValue(minVal)
     , m_maxValue(maxVal)
+    , m_selectedCategory(category)
 {
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+
+    // Add category filter at the top
+    wxBoxSizer* categorySizer = new wxBoxSizer(wxHORIZONTAL);
+    categorySizer->Add(new wxStaticText(this, wxID_ANY, "Category:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
+
+    m_categoryChoice = new wxChoice(this, wxID_ANY);
+    m_categoryChoice->Append("All Categories");
+    for (const auto& cat : categories) {
+        m_categoryChoice->Append(cat);
+    }
+    m_categoryChoice->SetSelection(0);
+
+    categorySizer->Add(m_categoryChoice, 1);
+    mainSizer->Add(categorySizer, 0, wxEXPAND | wxALL, 5);
 
     // Create min slider with value display
     wxBoxSizer* minSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -36,16 +51,12 @@ FilterDialog::FilterDialog(wxWindow* parent, int& minVal, int& maxVal)
     buttonSizer->Add(resetButton, 0, wxALL, 5);
     mainSizer->Add(buttonSizer, 0, wxALIGN_RIGHT);
 
-
-    // Bind the reset button
-
     SetSizer(mainSizer);
 
     // Bind events
     m_minSlider->Bind(wxEVT_SLIDER, &FilterDialog::OnSliderUpdate, this);
     m_maxSlider->Bind(wxEVT_SLIDER, &FilterDialog::OnSliderUpdate, this);
     resetButton->Bind(wxEVT_BUTTON, &FilterDialog::OnReset, this);
-
     Bind(wxEVT_BUTTON, &FilterDialog::OnSet, this, wxID_OK);
 }
 
@@ -55,11 +66,9 @@ void FilterDialog::OnSliderUpdate(wxCommandEvent& evt) {
 }
 
 void FilterDialog::OnReset(wxCommandEvent& evt) {
-    // Reset sliders to min and max values
     m_minSlider->SetValue(0);
     m_maxSlider->SetValue(999);
-
-    // Update the displayed values
+    m_categoryChoice->SetSelection(0);
     m_minValueText->SetLabel("0");
     m_maxValueText->SetLabel("999");
 }
@@ -67,5 +76,7 @@ void FilterDialog::OnReset(wxCommandEvent& evt) {
 void FilterDialog::OnSet(wxCommandEvent& evt) {
     m_minValue = m_minSlider->GetValue();
     m_maxValue = m_maxSlider->GetValue();
+    m_selectedCategory = m_categoryChoice->GetSelection() == 0 ? "" :
+        m_categoryChoice->GetString(m_categoryChoice->GetSelection()).ToStdString();
     EndModal(wxID_OK);
 }

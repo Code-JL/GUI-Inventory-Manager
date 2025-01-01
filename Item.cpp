@@ -17,7 +17,8 @@ Item::Item(const string& itemName,
     : name(toLowerCase(itemName)),
     description(itemDescription),
     amount(itemAmount),
-    imagePath(itemImagePath) {
+    imagePath(itemImagePath),
+    category("[None]") {
 }
 
 // Setter for the name (stored in lowercase)
@@ -50,6 +51,16 @@ string Item::getImage() const {
     return imagePath;
 }
 
+// Setter for the category
+void Item::setCategory(const string& itemCategory) {
+    category = itemCategory;
+}
+
+// Getter for the category
+string Item::getCategory() const {
+    return category;
+}
+
 // Setter for the amount
 void Item::setAmount(int itemAmount) {
     amount = itemAmount;
@@ -75,5 +86,6 @@ bool Item::operator==(const Item& other) const {
     return name == other.name &&
         description == other.description &&
         amount == other.amount &&
-        imagePath == other.imagePath;
+        imagePath == other.imagePath &&
+        category == other.category;
 }
