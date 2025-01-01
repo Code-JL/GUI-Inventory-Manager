@@ -124,12 +124,14 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     m_setAmountBtn = new wxButton(rightPanel, wxID_ANY, "Set Amount");
     m_setNameBtn = new wxButton(rightPanel, wxID_ANY, "Set Name");
     m_setImageBtn = new wxButton(rightPanel, wxID_ANY, "Set Image");
+    m_setCategoryBtn = new wxButton(rightPanel, wxID_ANY, "Change Category");
 
     buttonSizer->Add(m_incrementBtn, 0, wxALL, 5);
     buttonSizer->Add(m_decrementBtn, 0, wxALL, 5);
     buttonSizer->Add(m_setAmountBtn, 0, wxALL, 5);
     buttonSizer->Add(m_setNameBtn, 0, wxALL, 5);
     buttonSizer->Add(m_setImageBtn, 0, wxALL, 5);
+    buttonSizer->Add(m_setCategoryBtn, 0, wxALL, 5);
 
     rightSizer->Add(buttonSizer, 0, wxALIGN_CENTER | wxALL, 5);
     rightPanel->SetSizer(rightSizer);
@@ -145,6 +147,7 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     m_setAmountBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetAmount, this);
     m_setNameBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetName, this);
     m_setImageBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetImage, this);
+    m_setCategoryBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetCategory, this);
     m_searchBox->Bind(wxEVT_TEXT, &MainFrame::OnSearchInput, this);
     m_filterButton->Bind(wxEVT_BUTTON, &MainFrame::OnFilterButton, this);
 
@@ -175,10 +178,10 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
 void MainFrame::OnListBoxSelect(wxCommandEvent& evt) {
     int selection = m_listBox->GetSelection();
     if (selection != wxNOT_FOUND) {
-        const Item& selectedItem = m_items[selection];
-        m_itemTitle->SetLabel(selectedItem.getName());
-        m_itemDescription->SetLabel(selectedItem.getDescription());
-        m_itemCount->SetLabel(wxString::Format("Quantity: %d", selectedItem.getAmount()));
+        m_itemTitle->SetLabel(m_items[selection].getName());
+        m_itemDescription->SetValue(m_items[selection].getDescription());
+        m_itemCount->SetLabel(wxString::Format("Quantity: %d", m_items[selection].getAmount()));
+        m_itemCategory->SetLabel("Category: " + wxString::FromUTF8(m_items[selection].getCategory()));
     }
 }
 
@@ -235,6 +238,45 @@ void MainFrame::OnSetImage(wxCommandEvent& evt) {
         }
     }
 }
+
+void MainFrame::OnSetCategory(wxCommandEvent& evt) {
+    int selection = m_listBox->GetSelection();
+    if (selection != wxNOT_FOUND) {
+        wxDialog dialog(this, wxID_ANY, "Change Category");
+        wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+
+        // Create and populate the choice control
+        wxChoice* categoryChoice = new wxChoice(&dialog, wxID_ANY);
+        categoryChoice->Append("[None]");
+        for (const auto& category : m_categories) {
+            categoryChoice->Append(category);
+        }
+
+        // Set current category
+        int categoryIndex = 0;  // Default to [None]
+        std::string currentCategory = m_items[selection].getCategory();
+        for (size_t i = 0; i < m_categories.size(); ++i) {
+            if (m_categories[i] == currentCategory) {
+                categoryIndex = i + 1;  // +1 because [None] is at index 0
+                break;
+            }
+        }
+        categoryChoice->SetSelection(categoryIndex);
+
+        sizer->Add(categoryChoice, 0, wxALL | wxEXPAND, 5);
+        sizer->Add(dialog.CreateButtonSizer(wxOK | wxCANCEL), 0, wxALL | wxEXPAND, 5);
+        dialog.SetSizer(sizer);
+
+        if (dialog.ShowModal() == wxID_OK) {
+            wxString newCategory = categoryChoice->GetSelection() == 0 ?
+                wxString("[None]") : categoryChoice->GetString(categoryChoice->GetSelection());
+            m_items[selection].setCategory(newCategory.ToStdString());
+            m_itemCategory->SetLabel("Category: " + newCategory);
+        }
+    }
+}
+
+
 // Event handler for search
 void MainFrame::OnSearchInput(wxCommandEvent& evt) {
     UpdateItemList();

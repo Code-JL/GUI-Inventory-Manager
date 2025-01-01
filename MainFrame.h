@@ -37,6 +37,8 @@ private:
     wxButton* m_setAmountBtn;           // Set specific quantity button
     wxButton* m_setNameBtn;             // Rename item button
     wxButton* m_setImageBtn;            // Change item image button
+    wxButton* m_setCategoryBtn;
+
     // Search components
     wxTextCtrl* m_searchBox;
     wxButton* m_filterButton;
@@ -45,12 +47,14 @@ private:
     int m_maxQuantity = 999;
 
 
+
     // Event handlers for item manipulation
     void OnIncrement(wxCommandEvent& evt);
     void OnDecrement(wxCommandEvent& evt);
     void OnSetAmount(wxCommandEvent& evt);
     void OnSetName(wxCommandEvent& evt);
     void OnSetImage(wxCommandEvent& evt);
+    void OnSetCategory(wxCommandEvent& evt);
     void OnListBoxSelect(wxCommandEvent& evt);
 
     //Event handlers for search
