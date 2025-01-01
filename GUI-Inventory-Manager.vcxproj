@@ -140,12 +140,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
+    <ClInclude Include="FilterDialog.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="MainFrame.h" />
     <ClInclude Include="Save.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
+    <ClCompile Include="FilterDialog.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="MainFrame.cpp" />
     <ClCompile Include="Save.cpp" />

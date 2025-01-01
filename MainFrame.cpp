@@ -2,6 +2,7 @@
 #include <wx/persist/toplevel.h>
 #include <wx/display.h>
 
+// Initialize default inventory items
 void MainFrame::InitializeItems() {
     m_items.push_back(Item("Sword", "A sharp blade for close combat", 5, "path/to/sword.png"));
     m_items.push_back(Item("Shield", "Protective gear to block attacks", 3, "path/to/shield.png"));
@@ -10,9 +11,11 @@ void MainFrame::InitializeItems() {
     m_items.push_back(Item("Arrow", "Ammunition for bow. Deals 25 damage", 50, "path/to/arrow.png"));
 }
 
+// Main constructor for the application window
 MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) {
     InitializeItems();
 
+    // Set window size based on screen dimensions
     wxDisplay display;
     wxRect screenSize = display.GetGeometry();
     int width = screenSize.GetWidth() * 0.6;
@@ -20,7 +23,7 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     SetSize(width, height);
     SetMinSize(wxSize(800, 500));
 
-    // Menu Bar Setup
+    // Create and setup menu bar
     wxMenuBar* menuBar = new wxMenuBar();
     wxMenu* fileMenu = new wxMenu();
     fileMenu->Append(wxID_NEW, "&New");
@@ -36,17 +39,29 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     menuBar->Append(helpMenu, "&Help");
     SetMenuBar(menuBar);
 
-    // Main Layout
+    // Setup main layout
     wxPanel* mainPanel = new wxPanel(this);
     wxBoxSizer* horizontalSizer = new wxBoxSizer(wxHORIZONTAL);
 
-    // Left Panel
+    // Setup left panel with item list
     wxPanel* leftPanel = new wxPanel(mainPanel);
     wxBoxSizer* leftSizer = new wxBoxSizer(wxVERTICAL);
     m_listBox = new wxListBox(leftPanel, wxID_ANY);
     m_listBox->SetMinSize(wxSize(300, -1));
     m_listBox->SetMaxSize(wxSize(300, -1));
 
+    // Setup search bar
+    wxBoxSizer* searchSizer = new wxBoxSizer(wxHORIZONTAL);
+    m_searchBox = new wxTextCtrl(leftPanel, wxID_ANY, "",
+        wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+    m_filterButton = new wxButton(leftPanel, wxID_ANY, "Filters");
+
+    searchSizer->Add(m_searchBox, 1, wxEXPAND | wxRIGHT, 5);
+    searchSizer->Add(m_filterButton, 0);
+
+    leftSizer->Insert(0, searchSizer, 0, wxEXPAND | wxALL, 5);
+
+    // Populate list box with items
     for (const auto& item : m_items) {
         m_listBox->Append(item.getName());
     }
@@ -54,11 +69,11 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     leftSizer->Add(m_listBox, 1, wxEXPAND | wxALL, 5);
     leftPanel->SetSizer(leftSizer);
 
-    // Right Panel
+    // Setup right panel with item details
     wxPanel* rightPanel = new wxPanel(mainPanel);
     wxBoxSizer* rightSizer = new wxBoxSizer(wxVERTICAL);
 
-
+    // Setup item title display
     m_itemTitle = new wxStaticText(rightPanel, wxID_ANY, "Select an item");
     wxFont titleFont = m_itemTitle->GetFont();
     titleFont.SetPointSize(20);
@@ -66,15 +81,14 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     m_itemTitle->SetFont(titleFont);
     rightSizer->Add(m_itemTitle, 0, wxALIGN_CENTER | wxALL, 5);
 
+    // Setup item count display
     m_itemCount = new wxStaticText(rightPanel, wxID_ANY, "Quantity: 0");
     rightSizer->Add(m_itemCount, 0, wxALIGN_CENTER | wxALL, 5);
 
     rightSizer->AddStretchSpacer();
 
-
-    wxSize desSize = wxSize(800, 400); // Replace with your desired desSize
-
-    // Description Panel with Container
+    // Setup description panel
+    wxSize desSize = wxSize(800, 400);
     wxBoxSizer* descriptionContainerSizer = new wxBoxSizer(wxHORIZONTAL);
     wxPanel* descriptionPanel = new wxPanel(rightPanel);
     wxBoxSizer* descriptionSizer = new wxBoxSizer(wxVERTICAL);
@@ -86,18 +100,15 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     descriptionSizer->Add(m_itemDescription, 1, wxEXPAND | wxALL, 5);
     descriptionPanel->SetSizer(descriptionSizer);
 
-    // Add the description panel to a horizontal container for centering
+    // Center the description panel
     descriptionContainerSizer->AddStretchSpacer(1);
     descriptionContainerSizer->Add(descriptionPanel, 0, wxEXPAND | wxALL, 5);
     descriptionContainerSizer->AddStretchSpacer(1);
 
-    // Add the container to the right sizer
     rightSizer->Add(descriptionContainerSizer, 1, wxEXPAND);
 
-
-    // Button Layout
+    // Setup button controls
     wxBoxSizer* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
-
     m_incrementBtn = new wxButton(rightPanel, wxID_ANY, "Add");
     m_decrementBtn = new wxButton(rightPanel, wxID_ANY, "Remove");
     m_setAmountBtn = new wxButton(rightPanel, wxID_ANY, "Set Amount");
@@ -113,22 +124,27 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     rightSizer->Add(buttonSizer, 0, wxALIGN_CENTER | wxALL, 5);
     rightPanel->SetSizer(rightSizer);
 
+    // Finalize main layout
     horizontalSizer->Add(leftPanel, 0, wxEXPAND | wxALL, 5);
     horizontalSizer->Add(rightPanel, 1, wxEXPAND | wxALL, 5);
     mainPanel->SetSizer(horizontalSizer);
 
-    // Event Bindings
+    // Bind event handlers
     m_incrementBtn->Bind(wxEVT_BUTTON, &MainFrame::OnIncrement, this);
     m_decrementBtn->Bind(wxEVT_BUTTON, &MainFrame::OnDecrement, this);
     m_setAmountBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetAmount, this);
     m_setNameBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetName, this);
     m_setImageBtn->Bind(wxEVT_BUTTON, &MainFrame::OnSetImage, this);
+    m_searchBox->Bind(wxEVT_TEXT, &MainFrame::OnSearchInput, this);
+    m_filterButton->Bind(wxEVT_BUTTON, &MainFrame::OnFilterButton, this);
 
+    // Bind menu events
     fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnSave, this, wxID_SAVE);
     fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnLoad, this, wxID_OPEN);
     fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnExit, this, wxID_EXIT);
     helpMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnAbout, this, wxID_ABOUT);
 
+    // Bind description update event
     m_itemDescription->Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent& evt) {
         int selection = m_listBox->GetSelection();
         if (selection != wxNOT_FOUND) {
@@ -139,24 +155,23 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
 
     m_listBox->Bind(wxEVT_LISTBOX, &MainFrame::OnListBoxSelect, this);
 
+    // Setup window persistence
     SetName("MainFrame");
     wxPersistentRegisterAndRestore(this, "MainFrame");
 }
 
-
-
-
+// Event handler for item selection
 void MainFrame::OnListBoxSelect(wxCommandEvent& evt) {
     int selection = m_listBox->GetSelection();
     if (selection != wxNOT_FOUND) {
         const Item& selectedItem = m_items[selection];
-
         m_itemTitle->SetLabel(selectedItem.getName());
         m_itemDescription->SetLabel(selectedItem.getDescription());
         m_itemCount->SetLabel(wxString::Format("Quantity: %d", selectedItem.getAmount()));
     }
 }
 
+// Event handlers for item manipulation
 void MainFrame::OnIncrement(wxCommandEvent& evt) {
     int selection = m_listBox->GetSelection();
     if (selection != wxNOT_FOUND) {
@@ -209,9 +224,39 @@ void MainFrame::OnSetImage(wxCommandEvent& evt) {
         }
     }
 }
+// Event handler for search
+void MainFrame::OnSearchInput(wxCommandEvent& evt) {
+    UpdateItemList();
+}
+
+void MainFrame::OnFilterButton(wxCommandEvent& evt) {
+    FilterDialog dialog(this, m_minQuantity, m_maxQuantity);
+    if (dialog.ShowModal() == wxID_OK) {
+        UpdateItemList();
+    }
+}
+
+void MainFrame::UpdateItemList() {
+    wxString searchTerm = m_searchBox->GetValue().Lower();
+    m_listBox->Clear();
+
+    for (const auto& item : m_items) {
+        // Convert std::string to wxString for case-insensitive comparison
+        wxString itemName = wxString::FromUTF8(item.getName());
+
+        bool matchesSearch = itemName.Lower().Contains(searchTerm);
+        bool matchesQuantity = item.getAmount() >= m_minQuantity &&
+            item.getAmount() <= m_maxQuantity;
+
+        if (matchesSearch && matchesQuantity) {
+            m_listBox->Append(itemName);
+        }
+    }
+}
 
 
-//MENU BAR: START
+
+// Menu bar event handlers
 void MainFrame::OnSave(wxCommandEvent& evt) {
     Save::SaveItems(m_items, "save/inventory.csv");
 }
@@ -224,29 +269,22 @@ void MainFrame::OnLoad(wxCommandEvent& evt) {
     }
 }
 
-void MainFrame::OnExit(wxCommandEvent& evt)
-{
+void MainFrame::OnExit(wxCommandEvent& evt) {
     int answer = wxMessageBox("Would you like to save before exiting?",
         "Save Changes?",
         wxYES_NO | wxCANCEL | wxICON_QUESTION);
 
-    if (answer == wxYES)
-    {
-        OnSave(evt);  // Call the save function
+    if (answer == wxYES) {
+        OnSave(evt);
         Close();
     }
-    else if (answer == wxNO)
-    {
+    else if (answer == wxNO) {
         Close();
     }
 }
 
-
-void MainFrame::OnAbout(wxCommandEvent& evt)
-{
+void MainFrame::OnAbout(wxCommandEvent& evt) {
     wxMessageBox("GUI Iventory Manager\n\nClick OK to visit our website",
         "About", wxOK | wxICON_INFORMATION);
-
     wxLaunchDefaultBrowser("github.com/Code-JL/GUI-Inventory-Manager");
 }
-//MENU BAR: END
