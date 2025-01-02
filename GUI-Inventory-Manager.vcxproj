@@ -142,6 +142,7 @@
     <ClInclude Include="App.h" />
     <ClInclude Include="CategoryDialog.h" />
     <ClInclude Include="FilterDialog.h" />
+    <ClInclude Include="ImportDialog.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="MainFrame.h" />
     <ClInclude Include="Save.h" />
@@ -150,6 +151,7 @@
     <ClCompile Include="App.cpp" />
     <ClCompile Include="CategoryDialog.cpp" />
     <ClCompile Include="FilterDialog.cpp" />
+    <ClCompile Include="ImportDialog.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="MainFrame.cpp" />
     <ClCompile Include="Save.cpp" />

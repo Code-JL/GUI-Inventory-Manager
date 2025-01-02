@@ -1,19 +1,20 @@
 #include "MainFrame.h"
 #include <wx/persist/toplevel.h>
 #include <wx/display.h>
-
-// Initialize default inventory items
-void MainFrame::InitializeItems() {
-    m_items.push_back(Item("Sword", "A sharp blade for close combat", 5, "path/to/sword.png"));
-    m_items.push_back(Item("Shield", "Protective gear to block attacks", 3, "path/to/shield.png"));
-    m_items.push_back(Item("Potion", "Restores 50 HP when consumed", 10, "path/to/potion.png"));
-    m_items.push_back(Item("Bow", "Long-range weapon for precise attacks", 2, "path/to/bow.png"));
-    m_items.push_back(Item("Arrow", "Ammunition for bow. Deals 25 damage", 50, "path/to/arrow.png"));
-}
+#include <wx/progdlg.h>
+#include <wx/filename.h>
 
 // Main constructor for the application window
 MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) {
-    InitializeItems();
+
+    // Initialize default inventory items
+    if (Save::FileDoesNotExist("save/inventory.cfg")) {
+        InitializeDefaultInventory();
+        Save::SaveToCfg(m_items, m_categories, "save/inventory.cfg");
+    }
+    else {
+        Save::LoadFromCfg(m_items, m_categories, "save/inventory.cfg");
+    }
 
     // Set window size based on screen dimensions
     wxDisplay display;
@@ -23,9 +24,6 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     SetSize(width, height);
     SetMinSize(wxSize(800, 500));
 
-    // Create unique ID for "Manage Categories" menu item
-    const int ID_MANAGE_CATEGORIES = wxID_HIGHEST + 1;
-
     // Create and setup menu bar
     wxMenuBar* menuBar = new wxMenuBar();
     wxMenu* fileMenu = new wxMenu();
@@ -33,6 +31,9 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     fileMenu->Append(wxID_OPEN, "&Load");
     fileMenu->Append(wxID_SAVE, "&Save");
     fileMenu->Append(ID_MANAGE_CATEGORIES, "Manage &Categories");
+    fileMenu->AppendSeparator();
+    fileMenu->Append(ID_EXPORT_CSV, "Export to &CSV...");
+    fileMenu->Append(ID_IMPORT, "&Import...");
     fileMenu->AppendSeparator();
     fileMenu->Append(wxID_EXIT, "&Exit");
 
@@ -152,9 +153,12 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
     m_filterButton->Bind(wxEVT_BUTTON, &MainFrame::OnFilterButton, this);
 
     // Bind menu events
+    fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnNew, this, wxID_NEW);
     fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnSave, this, wxID_SAVE);
     fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnLoad, this, wxID_OPEN);
     fileMenu->Bind(wxEVT_MENU, &MainFrame::OnManageCategories, this, ID_MANAGE_CATEGORIES);
+    fileMenu->Bind(wxEVT_MENU, &MainFrame::OnExportCSV, this, ID_EXPORT_CSV);
+    fileMenu->Bind(wxEVT_MENU, &MainFrame::OnImport, this, ID_IMPORT);
     fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnExit, this, wxID_EXIT);
     helpMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnAbout, this, wxID_ABOUT);
 
@@ -307,8 +311,65 @@ void MainFrame::UpdateItemList() {
     }
 }
 
-
 // Menu bar event handlers
+void MainFrame::InitializeDefaultInventory() {
+    m_categories = { "Misc", "Armor", "Weapon" };
+
+    Item sword("Sword", "A sharp blade for close combat", 5, "path/to/sword.png");
+    sword.setCategory("Weapon");
+    m_items.push_back(sword);
+
+    Item shield("Shield", "Protective gear to block attacks", 3, "path/to/shield.png");
+    shield.setCategory("Armor");
+    m_items.push_back(shield);
+
+    Item potion("Potion", "Restores 50 HP when consumed", 10, "path/to/potion.png");
+    potion.setCategory("Misc");
+    m_items.push_back(potion);
+
+    Item bow("Bow", "Long-range weapon for precise attacks", 2, "path/to/bow.png");
+    bow.setCategory("Weapon");
+    m_items.push_back(bow);
+
+    Item arrow("Arrow", "Ammunition for bow. Deals 25 damage", 50, "path/to/arrow.png");
+    arrow.setCategory("Misc");
+    m_items.push_back(arrow);
+}
+
+void MainFrame::OnNew(wxCommandEvent& evt) {
+    wxMessageDialog dialog(
+        this,
+        "Would you like to load the default inventory or start with an empty inventory?",
+        "New Inventory",
+        wxYES_NO | wxCANCEL | wxICON_QUESTION
+    );
+
+    dialog.SetYesNoCancelLabels("Load Default", "Start Empty", "Cancel");
+    int answer = dialog.ShowModal();
+
+    if (answer != wxID_CANCEL) {
+        m_items.clear();
+        m_categories.clear();
+        m_minQuantity = 0;
+        m_maxQuantity = 999;
+        m_selectedCategory = "";
+
+        if (answer == wxID_YES) {
+            InitializeDefaultInventory();
+        }
+
+        // Clear and update displays
+        m_listBox->Clear();
+        m_itemTitle->SetLabel("");
+        m_itemDescription->SetValue("");
+        m_itemCount->SetLabel("Quantity: 0");
+        m_itemCategory->SetLabel("Category: [None]");
+        m_searchBox->SetValue("");
+
+        UpdateItemList();
+    }
+}
+
 void MainFrame::OnSave(wxCommandEvent& evt) {
     Save::SaveToCfg(m_items, m_categories, "save/inventory.cfg");
 }
@@ -324,7 +385,6 @@ void MainFrame::OnLoad(wxCommandEvent& evt) {
     }
 }
 
-
 void MainFrame::OnManageCategories(wxCommandEvent& evt) {
     CategoryDialog dialog(this, m_categories);
     if (dialog.ShowModal() == wxID_OK) {
@@ -333,6 +393,91 @@ void MainFrame::OnManageCategories(wxCommandEvent& evt) {
         if (selection != wxNOT_FOUND) {
             m_itemCategory->SetLabel("Category: " + m_items[selection].getCategory());
         }
+    }
+}
+
+void MainFrame::OnExportCSV(wxCommandEvent& evt) {
+    wxFileDialog saveFileDialog(this, "Export Inventory to CSV",
+        "", "inventory.csv",
+        "CSV files (*.csv)|*.csv",
+        wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+
+    if (saveFileDialog.ShowModal() == wxID_CANCEL)
+        return;
+
+    Save::SaveItems(m_items, saveFileDialog.GetPath().ToStdString());
+}
+
+void MainFrame::OnImport(wxCommandEvent& evt) {
+    ImportDialog dialog(this);
+    if (dialog.ShowModal() == wxID_OK) {
+        wxProgressDialog progress("Importing Files",
+            "Processing files...",
+            dialog.GetSelectedFiles().size(),
+            this,
+            wxPD_APP_MODAL | wxPD_AUTO_HIDE | wxPD_SMOOTH);
+
+        std::vector<std::string> newCategories;
+        int fileCount = 0;
+
+        for (const auto& filePath : dialog.GetSelectedFiles()) {
+            progress.Update(fileCount++, "Importing: " + wxFileName(filePath).GetFullName());
+
+            if (dialog.IsCSVFormat()) {
+                std::vector<Item> importedItems;
+                Save::LoadItems(importedItems, filePath);
+
+                // Collect categories
+                for (const auto& item : importedItems) {
+                    std::string category = item.getCategory();
+                    if (category != "[None]" &&
+                        std::find(newCategories.begin(), newCategories.end(), category) == newCategories.end() &&
+                        std::find(m_categories.begin(), m_categories.end(), category) == m_categories.end()) {
+                        newCategories.push_back(category);
+                    }
+                }
+
+                // Handle duplicate names
+                for (auto& item : importedItems) {
+                    std::string baseName = item.getName();
+                    int suffix = 1;
+                    while (std::any_of(m_items.begin(), m_items.end(),
+                        [&](const Item& existing) { return existing.getName() == item.getName(); })) {
+                        item.setName(baseName + " (" + std::to_string(suffix++) + ")");
+                    }
+                    m_items.push_back(item);
+                }
+            }
+            else {  // CFG format
+                std::vector<Item> importedItems;
+                std::vector<std::string> importedCategories;
+                Save::LoadFromCfg(importedItems, importedCategories, filePath);
+
+                // Merge categories
+                for (const auto& category : importedCategories) {
+                    if (std::find(m_categories.begin(), m_categories.end(), category) == m_categories.end()) {
+                        m_categories.push_back(category);
+                    }
+                }
+
+                // Handle duplicate names
+                for (auto& item : importedItems) {
+                    std::string baseName = item.getName();
+                    int suffix = 1;
+                    while (std::any_of(m_items.begin(), m_items.end(),
+                        [&](const Item& existing) { return existing.getName() == item.getName(); })) {
+                        item.setName(baseName + " (" + std::to_string(suffix++) + ")");
+                    }
+                    m_items.push_back(item);
+                }
+            }
+        }
+
+        // Add new categories from CSV imports
+        m_categories.insert(m_categories.end(), newCategories.begin(), newCategories.end());
+
+        UpdateItemList();
+        wxMessageBox("Import completed successfully!", "Import Complete", wxICON_INFORMATION);
     }
 }
 

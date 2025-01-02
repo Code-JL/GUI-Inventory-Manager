@@ -6,6 +6,7 @@
 #include "Save.h"
 #include "FilterDialog.h"
 #include "CategoryDialog.h"
+#include "ImportDialog.h"
 #include <vector>
 
 // Main application window class
@@ -47,6 +48,11 @@ private:
     int m_maxQuantity = 999;
 
 
+    // Create unique IDs for some items in the menu bar
+    const int ID_MANAGE_CATEGORIES = wxID_HIGHEST + 1;
+    const int ID_EXPORT_CSV = wxID_HIGHEST + 2;
+    const int ID_IMPORT = wxID_HIGHEST + 3;
+
 
     // Event handlers for item manipulation
     void OnIncrement(wxCommandEvent& evt);
@@ -63,12 +69,18 @@ private:
     void UpdateItemList();
 
     // Menu bar event handlers
+    void OnNew(wxCommandEvent& evt);
     void OnSave(wxCommandEvent& evt);    // Save inventory to file
     void OnLoad(wxCommandEvent& evt);    // Load inventory from file
     void OnExit(wxCommandEvent& evt);    // Handle application exit
     void OnAbout(wxCommandEvent& evt);   // Show about dialog
     void OnManageCategories(wxCommandEvent& evt);
 
+    //Import and Export
+    void OnExportCSV(wxCommandEvent& evt);
+    void OnImport(wxCommandEvent& evt);
+
+
     // Initialization
-    void InitializeItems();              // Setup initial inventory items
+    void InitializeDefaultInventory();
 };

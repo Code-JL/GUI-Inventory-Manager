@@ -15,9 +15,10 @@ public:
     static void SaveSettings(const std::list<std::string>& settings);
     static std::list<std::string> LoadSettings();
 
+    static bool FileDoesNotExist(const std::string& filePath);
+
 private:
     static std::string EscapeForCSV(const std::string& field);
     static std::vector<std::string> ParseCSVLine(const std::string& line);
-    static bool FileDoesNotExist(const std::string& filePath);
 };
 

@@ -40,12 +40,14 @@ void Save::SaveItems(const std::vector<Item>& items, const std::string& filePath
         file << EscapeForCSV(item.getName()) << separator
             << EscapeForCSV(item.getDescription()) << separator
             << item.getAmount() << separator
-            << EscapeForCSV(item.getImage()) << "\n";
+            << EscapeForCSV(item.getImage()) << separator
+            << EscapeForCSV(item.getCategory()) << "\n";
     }
 
     file.close();
     wxMessageBox("Items saved successfully!", "Save Complete", wxICON_INFORMATION);
 }
+
 
 void Save::SaveToCfg(const std::vector<Item>& items, const std::vector<std::string>& categories, const std::string& filePath) {
     std::ofstream file(filePath);
@@ -118,7 +120,6 @@ void Save::LoadFromCfg(std::vector<Item>& items, std::vector<std::string>& categ
     }
 
     file.close();
-    wxMessageBox("Items and categories loaded successfully!", "Load Complete", wxICON_INFORMATION);
 }
 
 
@@ -155,9 +156,11 @@ void Save::LoadItems(std::vector<Item>& items, const std::string& filePath) {
     std::string line;
     while (std::getline(file, line)) {
         std::vector<std::string> fields = ParseCSVLine(line);
-        if (fields.size() == 4) {
+        if (fields.size() == 5) {  // Updated to check for 5 fields
             try {
-                items.emplace_back(fields[0], fields[1], std::stoi(fields[2]), fields[3]);
+                Item item(fields[0], fields[1], std::stoi(fields[2]), fields[3]);
+                item.setCategory(fields[4]);  // Set the category
+                items.push_back(item);
             }
             catch (const std::invalid_argument& e) {
                 wxMessageBox("Warning: Invalid number format in line. Skipping. Error: " + std::string(e.what()), "Load Warning", wxICON_WARNING);
